@@ -9,12 +9,9 @@
   <body>
     <div class="container">
       <img class="logo" src="/static/images/superpowered-blue.svg" />
-
       <div class="controls">
-        <h2 class="demoTitle">Let's make some noise</h2>
-        
-
-        <button id="startButton" disabled onclick="resumeContext()">Start pink noise</button>
+        <span id="loading">is loading...</span>
+        <button id="ready" onclick="resumeContext()">Resume audio context</button>
         <p>Take a look at <code>src/index.js<code></p>
       </div>
     </div>

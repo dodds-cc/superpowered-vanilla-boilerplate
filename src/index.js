@@ -4,12 +4,13 @@ import { SuperpoweredWebAudio } from "../static/superpowered/SuperpoweredWebAudi
 // The  location of the superpowered WebAssembly library
 const superPoweredWasmLocation = "/static/superpowered/superpowered.wasm";
 // The  location of the processor from the browser to fetch
-const noiseProcessorUrl = "/static/processors/generatorProcessor.js";
+const toneProcessorUrl = "/static/processors/generatorProcessor.js";
 // The sample rate we'd like our AudioContext to operate at
 const minimumSampleRate = 48000;
 
 class DemoApplication {
   constructor() {
+    this.superpowered = null;
     this.webaudioManager = null;
     this.boot();
   }
@@ -18,14 +19,6 @@ class DemoApplication {
     await this.setupSuperpowered();
     await this.loadProcessor();
   }
-
-  onMessageProcessorAudioScope = (message) => {
-    // Here is where we receive serialisable message from the audio scope.
-    // We're sending our own ready event payload when the proeccesor is fully innitialised
-    if (message.event === "ready") {
-      document.getElementById("startButton").disabled = false;
-    }
-  };
 
   async setupSuperpowered() {
     this.superpowered = await SuperpoweredGlue.fetch(superPoweredWasmLocation);
@@ -45,11 +38,17 @@ class DemoApplication {
     );
   }
 
+  onMessageProcessorAudioScope = (message) => {
+    // Here is where we receive serialisable message from the audio scope.
+    // We're sending our own ready event payload when the proeccesor is fully innitialised
+    if (message.event === "ready") this.switchState();
+  };
+
   async loadProcessor() {
     // Now create the AudioWorkletNode, passing in the AudioWorkletProcessor url, it's registered name (defined inside the processor) and a callback then gets called when everything is up a ready
     this.generatorProcessorNode = await this.webaudioManager.createAudioNodeAsync(
-      noiseProcessorUrl,
-      "NoiseProcessor",
+      toneProcessorUrl,
+      "ToneProcessor",
       this.onMessageProcessorAudioScope
     );
 
@@ -63,9 +62,13 @@ class DemoApplication {
   resumeContext() {
     this.webaudioManager.audioContext.resume();
   }
+
+  switchState() {
+    document.getElementById("ready").style.display = "flex";
+    document.getElementById("loading").style.display = "none";
+  }
 }
 
 const demoApp = new DemoApplication();
 
-// expose a function to the window so we can call it from the HTML markup
 window.resumeContext = demoApp.resumeContext.bind(demoApp);
